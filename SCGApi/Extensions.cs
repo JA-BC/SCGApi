@@ -22,8 +22,8 @@ namespace SCGApi
 
             services.AddDbContext<SCGDb>();
 
-            services.AddTransient<BalanceService>();
-            services.AddTransient<CategoriaService>();
+            services.AddScoped<BalanceService>();
+            services.AddScoped<CategoriaService>();
 
             return services;
         }

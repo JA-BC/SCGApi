@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApi.Utilities.Http;
 
 namespace SCGApi.Controllers
 {
@@ -20,13 +21,33 @@ namespace SCGApi.Controllers
             _service = service;
         }
 
-        [HttpGet("[action]")]
-        public ActionResult Select()
+        [HttpPost("[action]")]
+        public IActionResult Select(APIRequest request)
         {
             try
             {
-                return Ok(_service.Select().ToList());
+                var result = _service.GetPage(request);
 
+                APIResponse<CategoriaModel> response = new APIResponse<CategoriaModel>()
+                {
+                    Data = result,
+                    TotalCount = result.Capacity
+                };
+
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("[action]")]
+        public ActionResult Requery(CategoriaModel model)
+        {
+            try
+            {
+                return Ok(_service.Requery(x => x.Id == model.Id));
             }
             catch (Exception e)
             {

@@ -57,6 +57,13 @@ namespace SCGApi
                 app.UseHsts();
             }
 
+            app.UseCors(cfg =>
+            {
+                cfg.AllowAnyHeader();
+                cfg.AllowAnyMethod();
+                cfg.AllowAnyOrigin();
+            });
+
             app.UseHttpsRedirection();
             app.UseMvc();
         }

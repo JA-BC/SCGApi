@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WebApi.Utilities.Http;
+using WebApi.Utilities.IQueryableExtensions;
 
 namespace SCG.Core.Services
 {
@@ -50,6 +52,14 @@ namespace SCG.Core.Services
         {
             var query = _db.Balances.ProjectTo<BalanceModel>(_mapper.ConfigurationProvider);
             return query;
+        }
+
+        public List<BalanceModel> GetPage(APIRequest request)
+        {
+            return Select()
+                    .AddFilter(request.Filters)
+                    .AddSortBy(request.Sorts)
+                    .AddPagination(request.Pagination);
         }
 
         public BalanceModel Requery(Func<BalanceModel, bool> predicate)
