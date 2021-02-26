@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using SCG.Core.Database;
-using SCG.Core.Scheme;
+using Microsoft.AspNetCore.Cors;
 
 namespace SCGApi
 {
@@ -30,6 +22,10 @@ namespace SCGApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDependencyInjections();
+            services.AddJWTAuthentication(Configuration);
+
+            services.AddCors();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
             .AddJsonOptions(options =>
                 {
@@ -57,15 +53,16 @@ namespace SCGApi
                 app.UseHsts();
             }
 
-            app.UseCors(cfg =>
-            {
-                cfg.AllowAnyHeader();
-                cfg.AllowAnyMethod();
-                cfg.AllowAnyOrigin();
-            });
+            app.UseCors(opt => opt
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .SetIsOriginAllowed(origin => true)
+                .AllowCredentials());
 
-            app.UseHttpsRedirection();
+            app.UseAuthentication();
+
             app.UseMvc();
+
         }
     }
 }

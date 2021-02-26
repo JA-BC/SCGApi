@@ -1,14 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCG.Core.Database.Entities;
 using SCG.Core.Scheme;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SCG.Core.Database
 {
-    public class SCGDb: DbContext
+    public class SCGDb: IdentityDbContext<UserEntity>
     {
         private readonly IConfiguration _configuration;
 
@@ -24,6 +22,7 @@ namespace SCG.Core.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.EntityConfig();
         }
 
