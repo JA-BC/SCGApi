@@ -29,5 +29,6 @@ namespace SCG.Core.Database
         public DbSet<BalanceEntity> Balances { get; set; }
         public DbSet<CategoriaEntity> Categorias { get; set; }
         public DbSet<TipoCategoriaEntity> TipoCategorias { get; set; }
+        public DbSet<UploadEntity> Uploads { get; set; }
     }
 }

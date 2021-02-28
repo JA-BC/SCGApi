@@ -37,6 +37,7 @@ namespace SCGApi
 
             services.AddScoped<BalanceService>();
             services.AddScoped<CategoriaService>();
+            services.AddScoped<UploadService>();
 
             return services;
         }
