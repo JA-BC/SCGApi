@@ -30,7 +30,12 @@ namespace SCG.Core.Services
 
             if (exists != null)
             {
-                return exists;
+                return Update(new UploadModel {
+                    Id = exists.Id,
+                    FileName = model.FileName,
+                    FilePath = dbPath,
+                    UserId = model.UserId
+                });
             }
 
             var entity = new UploadEntity

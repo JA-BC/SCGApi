@@ -40,7 +40,7 @@ namespace SCGApi.Controllers
         {
             try
             {
-                return Ok(_service.Requery(x => x.Id == model.Id));
+                return Ok(_service.Requery(x => x.UserId == model.UserId));
             }
             catch (Exception e)
             {

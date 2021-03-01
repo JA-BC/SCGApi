@@ -33,16 +33,24 @@ namespace SCGApi.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Login(UserModel model)
         {
-            var context = HttpContext;
+            var user = model.UserName.Contains('@')
+                ? await _userManager.FindByEmailAsync(model.UserName)
+                : await _userManager.FindByNameAsync(model.UserName);
+
+            if (user == null)
+            {
+                return BadRequest("Verifique su nombre de usuario o correo");
+            }
+
             var result = await _signInManager.PasswordSignInAsync(
-                model.UserName, model.Password, model.RememberMe, false);
+                user, model.Password, model.RememberMe, false);
 
             if (!result.Succeeded)
             {
-                return BadRequest("Usuario o contraseña incorrectos");
+                return BadRequest("Verifique su contraseña");
             }
 
-            return BuildToken(model);
+            return BuildToken(user);
         }
 
         [HttpPost("[action]")]
@@ -74,12 +82,25 @@ namespace SCGApi.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> ChangePassword(UserModel model)
         {
             try
             {
-                await _signInManager.SignOutAsync();
-                return Ok();
+                var user = model.UserName.Contains('@')
+                    ? await _userManager.FindByEmailAsync(model.UserName)
+                    : await _userManager.FindByNameAsync(model.UserName);
+
+                var result = await _userManager.ChangePasswordAsync(
+                    user, model.Password, model.NewPassword);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest("Verifique su contraseña anterior");
+                }
+
+                await _signInManager.SignInAsync(user, false);
+
+                return BuildToken(user);
 
             }
             catch (Exception e)
@@ -89,13 +110,29 @@ namespace SCGApi.Controllers
 
         }
 
+        [HttpPost("[action]")]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+                await _signInManager.SignOutAsync();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+
+        }
+
         [NonAction]
-        public IActionResult BuildToken(UserModel model)
+        public IActionResult BuildToken(UserEntity user)
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.UniqueName, model.UserName),
-                //new Claim(JwtRegisteredClaimNames.Email, model.Email)
+                new Claim(JwtRegisteredClaimNames.NameId, user.Id),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Secret-key"]));
