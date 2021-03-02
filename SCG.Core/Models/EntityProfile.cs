@@ -12,7 +12,7 @@ namespace SCG.Core.Models
         {
             CreateMap<BalanceModel, BalanceEntity>().ReverseMap();
             CreateMap<CategoriaModel, CategoriaEntity>().ReverseMap();
-
+            CreateMap<UploadModel, UploadEntity>().ReverseMap();
         }
     }
 }

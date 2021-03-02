@@ -63,10 +63,11 @@ namespace SCGApi
             });
 
             app.UseCors(opt => opt
-                .AllowAnyHeader()
                 .AllowAnyMethod()
+                .AllowAnyHeader()
                 .SetIsOriginAllowed(origin => true)
-                .AllowCredentials());
+                .AllowCredentials()
+            );
 
             app.UseAuthentication();
 

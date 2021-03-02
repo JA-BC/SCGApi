@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApi.Utilities.Http;
 
 namespace SCGApi.Controllers
 {
@@ -24,20 +23,12 @@ namespace SCGApi.Controllers
             _service = service;
         }
 
-        [HttpPost("[action]")]
-        public IActionResult Select(APIRequest request)
+        [HttpGet("[action]")]
+        public async Task<IActionResult> Select()
         {
             try
             {
-                var result = _service.GetPage(request);
-
-                APIResponse<CategoriaModel> response = new APIResponse<CategoriaModel>()
-                {
-                    Data = result,
-                    TotalCount = result.Capacity
-                };
-
-                return Ok(response);
+                return Ok(await _service.Select());
             }
             catch (Exception e)
             {
@@ -46,54 +37,54 @@ namespace SCGApi.Controllers
         }
 
         [HttpPost("[action]")]
-        public ActionResult Requery(CategoriaModel model)
+        public async Task<IActionResult> Requery(CategoriaModel model)
         {
             try
             {
-                return Ok(_service.Requery(x => x.Id == model.Id));
+                return Ok(await _service.Requery(x => x.Id == model.Id));
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
         }
 
         [HttpPost("[action]")]
-        public ActionResult Add(CategoriaModel model)
+        public async Task<IActionResult> Add(CategoriaModel model)
         {
             try
             {
-                return Ok(_service.Add(model));
+                return Ok(await _service.Add(model));
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
         }
 
         [HttpPost("[action]")]
-        public ActionResult Update(CategoriaModel model)
+        public async Task<IActionResult> Update(CategoriaModel model)
         {
             try
             {
-                return Ok(_service.Update(model));
+                return Ok(await _service.Update(model));
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
         }
 
         [HttpPost("[action]")]
-        public ActionResult Delete(CategoriaModel model)
+        public async Task<IActionResult> Delete(CategoriaModel model)
         {
             try
             {
-                return Ok(_service.Delete(model));
+                return Ok(await _service.Delete(model));
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
         }
     }

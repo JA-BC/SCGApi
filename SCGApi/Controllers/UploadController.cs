@@ -23,55 +23,55 @@ namespace SCGApi.Controllers
         }
 
         [HttpPost("[action]")]
-        public IActionResult Add([FromForm] UploadModel model)
+        public async Task<IActionResult> Add([FromForm] UploadModel model)
         {
             try
             {
-                return Ok(_service.Add(model));
+                return Ok(await _service.Add(model));
 
             } catch(Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
         }
 
         [HttpPost("[action]")]
-        public ActionResult Requery(UploadModel model)
+        public async Task<IActionResult> Requery(UploadModel model)
         {
             try
             {
-                return Ok(_service.Requery(x => x.UserId == model.UserId));
+                return Ok(await _service.Requery(x => x.UserId == model.UserId));
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
         }
 
 
         [HttpPost("[action]")]
-        public ActionResult Update(UploadModel model)
+        public async Task<IActionResult> Update(UploadModel model)
         {
             try
             {
-                return Ok(_service.Update(model));
+                return Ok(await _service.Update(model));
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
         }
 
         [HttpPost("[action]")]
-        public ActionResult Delete(UploadModel model)
+        public async Task<IActionResult> Delete(UploadModel model)
         {
             try
             {
-                return Ok(_service.Delete(model));
+                return Ok(await _service.Delete(model));
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
         }
     }

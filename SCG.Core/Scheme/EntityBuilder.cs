@@ -23,7 +23,7 @@ namespace SCG.Core.Scheme
             modelBuilder.Entity<BalanceEntity>(entity =>
             {
                 entity.Property(b => b.Fecha).HasColumnType("date");
-                entity.HasData(SeedData.GetBalanceEntities());
+                // entity.HasData(SeedData.GetBalanceEntities());
             });
 
             return modelBuilder;

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using SCG.Core.Database;
 using SCG.Core.Database.Entities;
@@ -8,8 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WebApi.Utilities.Http;
-using WebApi.Utilities.IQueryableExtensions;
+using System.Threading.Tasks;
 
 namespace SCG.Core.Services
 {
@@ -24,61 +24,53 @@ namespace SCG.Core.Services
             _mapper = mapper;
         }
 
-        public CategoriaModel Add(CategoriaModel model)
+        public async Task<CategoriaModel> Add(CategoriaModel model)
         {
 
             var entity = _mapper.Map<CategoriaModel, CategoriaEntity>(model);
-            _db.Categorias.Add(entity);
-            _db.SaveChanges();
+            await _db.Categorias.AddAsync(entity);
+            await _db.SaveChangesAsync();
 
-            return Requery(x => x.Id == entity.Id);
+            return await Requery(x => x.Id == entity.Id);
         }
 
-        public CategoriaModel Delete(CategoriaModel model)
+        public async Task<CategoriaModel> Delete(CategoriaModel model)
         {
-            var item = _db.Categorias.FirstOrDefault(x => x.Id == model.Id);
+            var item = await _db.Categorias.FirstOrDefaultAsync(x => x.Id == model.Id);
 
             if (item == null)
                 throw new Exception("Registro no existente");
 
             _db.Categorias.Remove(item);
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             return model;
         }
 
-        public IQueryable<CategoriaModel> Select()
+        public async Task<IList<CategoriaModel>> Select()
         {
             var query = _db.Categorias.ProjectTo<CategoriaModel>(_mapper.ConfigurationProvider);
-            return query;
+            return await query.ToListAsync();
         }
 
-        public List<CategoriaModel> GetPage(APIRequest request)
+        public async Task<CategoriaModel> Requery(Func<CategoriaModel, bool> predicate)
         {
-            return Select()
-                    .AddFilter(request.Filters)
-                    .AddSortBy(request.Sorts)
-                    .AddPagination(request.Pagination);
+            return (await Select()).Where(predicate).FirstOrDefault();
         }
 
-        public CategoriaModel Requery(Func<CategoriaModel, bool> predicate)
+        public async Task<CategoriaModel> Update(CategoriaModel model)
         {
-            return Select().Where(predicate).FirstOrDefault();
-        }
-
-        public CategoriaModel Update(CategoriaModel model)
-        {
-            var item = _db.Categorias.FirstOrDefault(x => x.Id == model.Id);
+            var item = await _db.Categorias.FirstOrDefaultAsync(x => x.Id == model.Id);
 
             if (item == null)
                 throw new Exception("Registro no encontrado");
 
             _mapper.Map(model, item);
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
-            return Requery(m => m.Id == item.Id);
+            return await Requery(m => m.Id == item.Id);
         }
 
     }

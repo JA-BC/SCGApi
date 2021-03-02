@@ -254,16 +254,6 @@ namespace SCG.Core.Migrations
                 columns: new[] { "Id", "Nombre", "TipoCategoriaId" },
                 values: new object[] { 3, "Gasto Diarios", 2 });
 
-            migrationBuilder.InsertData(
-                table: "Balance",
-                columns: new[] { "Id", "CategoriaId", "Costo", "Descripcion", "Fecha" },
-                values: new object[] { 1, 1, 85000, "Primera Quincena", new DateTime(2021, 2, 28, 15, 37, 25, 900, DateTimeKind.Local) });
-
-            migrationBuilder.InsertData(
-                table: "Balance",
-                columns: new[] { "Id", "CategoriaId", "Costo", "Descripcion", "Fecha" },
-                values: new object[] { 2, 2, 9000, "Pago de Reparaciones", new DateTime(2021, 3, 5, 15, 37, 25, 901, DateTimeKind.Local) });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",

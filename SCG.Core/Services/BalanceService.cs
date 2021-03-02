@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using SCG.Core.Database;
 using SCG.Core.Database.Entities;
 using SCG.Core.Interfaces;
@@ -8,8 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WebApi.Utilities.Http;
-using WebApi.Utilities.IQueryableExtensions;
+using System.Threading.Tasks;
 
 namespace SCG.Core.Services
 {
@@ -24,61 +24,53 @@ namespace SCG.Core.Services
             _mapper = mapper;
         }
 
-        public BalanceModel Add(BalanceModel model)
+        public async Task<BalanceModel> Add(BalanceModel model)
         {
 
             var entity = _mapper.Map<BalanceModel, BalanceEntity>(model);
-            _db.Balances.Add(entity);
-            _db.SaveChanges();
+            await _db.Balances.AddAsync(entity);
+            await _db.SaveChangesAsync();
 
-            return Requery(x => x.Id == entity.Id);
+            return await Requery(x => x.Id == entity.Id);
         }
 
-        public BalanceModel Delete(BalanceModel model)
+        public async Task<BalanceModel> Delete(BalanceModel model)
         {
-            var item = _db.Balances.FirstOrDefault(x => x.Id == model.Id);
+            var item = await _db.Balances.FirstOrDefaultAsync(x => x.Id == model.Id);
 
             if (item == null)
                 throw new Exception("Registro no existente");
 
             _db.Balances.Remove(item);
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             return model;
         }
 
-        public IQueryable<BalanceModel> Select()
+        public async Task<IList<BalanceModel>> Select()
         {
             var query = _db.Balances.ProjectTo<BalanceModel>(_mapper.ConfigurationProvider);
-            return query;
+            return await query.ToListAsync();
         }
 
-        public List<BalanceModel> GetPage(APIRequest request)
+        public async Task<BalanceModel> Requery(Func<BalanceModel, bool> predicate)
         {
-            return Select()
-                    .AddFilter(request.Filters)
-                    .AddSortBy(request.Sorts)
-                    .AddPagination(request.Pagination);
+            return (await Select()).Where(predicate).FirstOrDefault();
         }
 
-        public BalanceModel Requery(Func<BalanceModel, bool> predicate)
+        public async Task<BalanceModel> Update(BalanceModel model)
         {
-            return Select().Where(predicate).FirstOrDefault();
-        }
-
-        public BalanceModel Update(BalanceModel model)
-        {
-            var item = _db.Balances.FirstOrDefault(x => x.Id == model.Id);
+            var item = await _db.Balances.FirstOrDefaultAsync(x => x.Id == model.Id);
 
             if (item == null)
                 throw new Exception("Registro no encontrado");
 
             _mapper.Map(model, item);
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
-            return Requery(m => m.Id == item.Id);
+            return await Requery(m => m.Id == item.Id);
         }
 
     }

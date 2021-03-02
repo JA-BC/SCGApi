@@ -1,4 +1,7 @@
-﻿using SCG.Core.Database;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using SCG.Core.Database;
 using SCG.Core.Database.Entities;
 using SCG.Core.Interfaces;
 using SCG.Core.Models;
@@ -8,120 +11,94 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WebApi.Utilities.Http;
-using WebApi.Utilities.IQueryableExtensions;
 
 namespace SCG.Core.Services
 {
     public class UploadService: IServiceMethod<UploadModel>
     {
         private readonly SCGDb _db;
+        private readonly IMapper _mapper;
 
-        public UploadService(SCGDb db)
+        public UploadService(SCGDb db, IMapper mapper)
         {
             _db = db;
+            _mapper = mapper;
         }
 
-        public UploadModel Add(UploadModel model)
+        public async Task<UploadModel> Add(UploadModel model)
         {
-            var dbPath = SaveFile(model);
-
-            var exists = Requery(x => x.UserId == model.UserId);
+            var exists = await Requery(x => x.UserId == model.UserId);
+            // Save file and get source path
+            model.FilePath = await SaveFile(model, exists?.FilePath);
 
             if (exists != null)
             {
-                return Update(new UploadModel {
-                    Id = exists.Id,
-                    FileName = model.FileName,
-                    FilePath = dbPath,
-                    UserId = model.UserId
-                });
+                model.Id = exists.Id;
+                return await Update(model);
             }
 
-            var entity = new UploadEntity
-            {
-                FileName = model.FileName,
-                FilePath = dbPath,
-                UserId = model.UserId
-            };
+            var entity = _mapper.Map<UploadModel, UploadEntity>(model);
 
-            _db.Uploads.Add(entity);
-            _db.SaveChanges();
+            await _db.Uploads.AddAsync(entity);
+            await _db.SaveChangesAsync();
 
-            return Requery(x => x.Id == entity.Id);
+            return await Requery(x => x.Id == entity.Id);
         }
 
-        public UploadModel Delete(UploadModel model)
+        public async Task<UploadModel> Delete(UploadModel model)
         {
-            var item = _db.Uploads.FirstOrDefault(x => x.Id == model.Id);
+            var item = await _db.Uploads.FirstOrDefaultAsync(x => x.Id == model.Id);
 
             if (item == null)
                 throw new Exception("Registro no existente");
 
             _db.Uploads.Remove(item);
-
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             return model;
         }
 
-        public IQueryable<UploadModel> Select()
+        public async Task<IList<UploadModel>> Select()
         {
-            var query = from x in _db.Uploads
-                        select new UploadModel
-                        {
-                            Id = x.Id,
-                            FileName = x.FileName,
-                            FilePath = x.FilePath,
-                            UserId = x.UserId
-                        };
-
-            return query;
+            var query = _db.Uploads.ProjectTo<UploadModel>(_mapper.ConfigurationProvider);
+            return await query.ToListAsync();
         }
 
-        public List<UploadModel> GetPage(APIRequest request)
+        public async Task<UploadModel> Requery(Func<UploadModel, bool> predicate)
         {
-            return Select()
-                    .AddFilter(request.Filters)
-                    .AddSortBy(request.Sorts)
-                    .AddPagination(request.Pagination);
+            return (await Select()).Where(predicate).FirstOrDefault();
         }
 
-        public UploadModel Requery(Func<UploadModel, bool> predicate)
+        public async Task<UploadModel> Update(UploadModel model)
         {
-            return Select().Where(predicate).FirstOrDefault();
-        }
-
-        public UploadModel Update(UploadModel model)
-        {
-            var item = _db.Uploads.FirstOrDefault(x => x.Id == model.Id);
+            var item = await _db.Uploads.FirstOrDefaultAsync(x => x.Id == model.Id);
 
             if (item == null)
                 throw new Exception("Registro no encontrado");
 
-            item.FileName = model.FileName;
-            item.FilePath = model.FilePath;
-            item.UserId = model.UserId;
+            _mapper.Map(model, item);
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
-            return Requery(m => m.Id == item.Id);
+            return await Requery(m => m.Id == item.Id);
         }
 
-        private string SaveFile(UploadModel model)
+        private async Task<string> SaveFile(UploadModel model, string existingPath)
         {
-            var ext = model.FileName.Split('.').LastOrDefault();
-            var dbPath = Path.Combine("Resources", "Images", $"{model.UserId}.{ext}");
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), dbPath);
-
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
+            
+            if (!string.IsNullOrEmpty(existingPath)) {
+                File.Delete(existingPath);
             }
+
+            // Save file with UserId as file's name
+            // Frontend only accepts .jpg
+            string date = DateTime.Now.ToString("dd-MM-yyyy-HH-mm-ss-fff");
+            string dbPath = Path.Combine("Resources", "Images", $"{model.UserId}-{date}.jpg");
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), dbPath);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                model.File.CopyTo(stream);
+                await model.File.CopyToAsync(stream);
             }
 
             return dbPath;

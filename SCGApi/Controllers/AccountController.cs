@@ -33,24 +33,30 @@ namespace SCGApi.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Login(UserModel model)
         {
-            var user = model.UserName.Contains('@')
-                ? await _userManager.FindByEmailAsync(model.UserName)
-                : await _userManager.FindByNameAsync(model.UserName);
+            try {
+                var user = model.UserName.Contains('@')
+                    ? await _userManager.FindByEmailAsync(model.UserName)
+                    : await _userManager.FindByNameAsync(model.UserName);
 
-            if (user == null)
+                if (user == null)
+                {
+                    return BadRequest("Verifique su nombre de usuario o correo");
+                }
+
+                var result = await _signInManager.PasswordSignInAsync(
+                    user, model.Password, model.RememberMe, false);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest("Verifique su contraseña");
+                }
+
+                return BuildToken(user);
+
+            } catch (Exception e) 
             {
-                return BadRequest("Verifique su nombre de usuario o correo");
+                return BadRequest(e.Message);
             }
-
-            var result = await _signInManager.PasswordSignInAsync(
-                user, model.Password, model.RememberMe, false);
-
-            if (!result.Succeeded)
-            {
-                return BadRequest("Verifique su contraseña");
-            }
-
-            return BuildToken(user);
         }
 
         [HttpPost("[action]")]
@@ -76,7 +82,7 @@ namespace SCGApi.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
 
         }
@@ -105,7 +111,7 @@ namespace SCGApi.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
 
         }
@@ -120,7 +126,7 @@ namespace SCGApi.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
 
         }

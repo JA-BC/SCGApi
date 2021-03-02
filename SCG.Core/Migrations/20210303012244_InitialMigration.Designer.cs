@@ -10,7 +10,7 @@ using SCG.Core.Database;
 namespace SCG.Core.Migrations
 {
     [DbContext(typeof(SCGDb))]
-    [Migration("20210228193726_InitialMigration")]
+    [Migration("20210303012244_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,11 +151,6 @@ namespace SCG.Core.Migrations
                     b.HasIndex("CategoriaId");
 
                     b.ToTable("Balance");
-
-                    b.HasData(
-                        new { Id = 1, CategoriaId = 1, Costo = 85000, Descripcion = "Primera Quincena", Fecha = new DateTime(2021, 2, 28, 15, 37, 25, 900, DateTimeKind.Local) },
-                        new { Id = 2, CategoriaId = 2, Costo = 9000, Descripcion = "Pago de Reparaciones", Fecha = new DateTime(2021, 3, 5, 15, 37, 25, 901, DateTimeKind.Local) }
-                    );
                 });
 
             modelBuilder.Entity("SCG.Core.Database.Entities.CategoriaEntity", b =>
