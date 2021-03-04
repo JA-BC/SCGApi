@@ -30,10 +30,14 @@ namespace SCGApi
 
             services.AddIdentity<UserEntity, IdentityRole>(opt =>
             {
+                opt.Password.RequireDigit = false;
+                opt.Password.RequiredLength = 8;
                 opt.Password.RequireNonAlphanumeric = false;
                 opt.Password.RequireUppercase = false;
+                opt.Password.RequireLowercase = false;
             })
-            .AddEntityFrameworkStores<SCGDb>();
+            .AddEntityFrameworkStores<SCGDb>()
+            .AddDefaultTokenProviders();
 
             services.AddScoped<BalanceService>();
             services.AddScoped<CategoriaService>();
