@@ -30,6 +30,7 @@ namespace SCGApi
 
             services.AddIdentity<UserEntity, IdentityRole>(opt =>
             {
+                opt.User.RequireUniqueEmail = true;
                 opt.Password.RequireDigit = false;
                 opt.Password.RequiredLength = 8;
                 opt.Password.RequireNonAlphanumeric = false;
@@ -37,7 +38,8 @@ namespace SCGApi
                 opt.Password.RequireLowercase = false;
             })
             .AddEntityFrameworkStores<SCGDb>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber<IdentityErrors>();
 
             services.AddScoped<BalanceService>();
             services.AddScoped<CategoriaService>();

@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using SCG.Core.Database.Entities;
 using SCG.Core.Models;
 using System;
+using System.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -64,6 +65,7 @@ namespace SCGApi.Controllers
         {
             try
             {
+
                 var user = new UserEntity
                 {
                     UserName = model.UserName,
@@ -72,12 +74,12 @@ namespace SCGApi.Controllers
 
                 var result = await _userManager.CreateAsync(user, model.Password);
 
-                if (result.Succeeded)
+                if (!result.Succeeded)
                 {
-                    return Ok();
+                    throw new Exception(result.Errors.FirstOrDefault().Description);
                 }
 
-                return BadRequest(result.Errors);
+                return Ok();
 
             }
             catch (Exception e)
